@@ -3,7 +3,12 @@ import os
 
 from flask import Flask
 from flask import request
+
+from flask_cors import CORS
+
+
 app = Flask(__name__)
+CORS(app)
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -16,15 +21,20 @@ print("authenticated")
 @app.post("/api/send-linkedin-connection")
 def main():
     print(request.args)
+    
 
     # GET a profile
     people = api.search_people(request.args['query'])
-    person = people[0]
-    print(person)
+    print("people", people)
+    if len(people) > 0:
+        person = people[0]
+        print(person)
 
-    result = api.add_connection(person['urn_id'])
-    return {'success': not result}
+        result = api.add_connection(person['urn_id'], message=request.args['message'])
+        return {'success': not result}
+    else:
+        return {'success': False}
 
 
-def create_app():
-   return app
+if __name__ == "__main__":
+    app.run(port=int(os.environ.get("PORT", 8080)),host='0.0.0.0',debug=True)
